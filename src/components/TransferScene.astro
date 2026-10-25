@@ -10,8 +10,8 @@
   <svg viewBox="0 0 640 150" preserveAspectRatio="xMidYMid meet">
     <defs>
       <radialGradient id="spark-glow">
-        <stop offset="0" style="stop-color: var(--spark); stop-opacity: 0.9"></stop>
-        <stop offset="1" style="stop-color: var(--spark); stop-opacity: 0"></stop>
+        <stop offset="0" class="glow-inner"></stop>
+        <stop offset="1" class="glow-outer"></stop>
       </radialGradient>
       <mask id="trail-reveal" maskUnits="userSpaceOnUse">
         <path class="trail-mask" d="M90 70 Q310 -30 530 73" pathLength="100"></path>
@@ -123,6 +123,15 @@
     stroke-dashoffset: 100;
   }
 
+  /* Gradient stops styled by class, not inline style attributes, so the CSP needs no 'unsafe-inline' */
+  .glow-inner {
+    stop-color: var(--spark);
+    stop-opacity: 0.9;
+  }
+  .glow-outer {
+    stop-color: var(--spark);
+    stop-opacity: 0;
+  }
   .spark-core {
     fill: var(--spark);
   }

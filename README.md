@@ -50,6 +50,15 @@ Rooms are end-to-end encrypted by default (`src/scripts/crypto.ts`, Web Crypto, 
 
 > Web Crypto is only available in secure contexts (HTTPS, `localhost`). When testing over `http://<LAN-IP>`, encrypted rooms therefore do not work; unencrypted ones do.
 
+### Security headers
+
+`src/server/security.ts` adds security headers to every Worker response (except WebSocket upgrades):
+
+- **Content-Security-Policy**: scripts, styles and connections only from tee itself, plus Cloudflare Turnstile (`challenges.cloudflare.com`); no inline scripts or styles, `frame-ancestors 'none'`, `object-src 'none'`. Astro is configured to always ship JS and CSS as files (`inlineStylesheets: 'never'`, `assetsInlineLimit: 0`). Skipped in `astro dev`, where Vite injects styles at runtime.
+- **Strict-Transport-Security**, **X-Content-Type-Options: nosniff**, **Referrer-Policy: no-referrer** (room URLs carry the room code), **Permissions-Policy**, **Cross-Origin-Opener-Policy**, **X-Frame-Options**.
+
+When adding third-party resources, extend the CSP in `security.ts`, otherwise the browser blocks them.
+
 ### Moderation (reports, blocking, deletion)
 
 Runbook: [docs/abuse.md](docs/abuse.md).
@@ -104,7 +113,8 @@ src/
 │  ├─ api.ts              API routes, validation, rate limiting, Turnstile, R2 streaming
 │  ├─ room.ts             Durable Object per room (SQLite, WebSockets, alarm, block/freeze)
 │  ├─ quota.ts            Durable Object enforcing storage and upload limits
-│  └─ moderation.ts       Durable Object for reports, signed admin links, report emails
+│  ├─ moderation.ts       Durable Object for reports, signed admin links, report emails
+│  └─ security.ts         Security headers (CSP, HSTS, …) for every response
 ├─ shared/                Code shared by client and server
 │  ├─ codes.ts            Room code generation / validation
 │  ├─ limits.ts           Limits & TTL

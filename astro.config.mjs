@@ -9,6 +9,12 @@ export default defineConfig({
   session: false,
   adapter: cloudflare({ imageService: 'passthrough' }),
   devToolbar: { enabled: false },
+  // Always ship CSS as files: the Content-Security-Policy allows styles from 'self' only
+  build: { inlineStylesheets: 'never' },
   // qrcode is CommonJS: pre-bundle it explicitly, otherwise the dev server sometimes loads it too late
-  vite: { optimizeDeps: { include: ['qrcode'] } },
+  vite: {
+    optimizeDeps: { include: ['qrcode'] },
+    // Never inline small scripts into the HTML: the Content-Security-Policy forbids inline scripts
+    build: { assetsInlineLimit: 0 },
+  },
 });
