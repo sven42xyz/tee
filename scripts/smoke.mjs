@@ -18,7 +18,25 @@ const HEADERS = [
 const failures = [];
 const fail = (msg) => failures.push(msg);
 
-const wrangler = spawn('npx', ['wrangler', 'dev', '--port', String(PORT)], { stdio: ['ignore', 'pipe', 'pipe'] });
+// Own process group (detached), so stopping it also stops wrangler's children (workerd).
+// Killing only the parent leaves them running on Linux, and the CI step would never end.
+const wrangler = spawn('npx', ['wrangler', 'dev', '--port', String(PORT)], {
+  stdio: ['ignore', 'pipe', 'pipe'],
+  detached: true,
+});
+const stopWrangler = () => {
+  try {
+    process.kill(-wrangler.pid, 'SIGTERM');
+  } catch {
+    // already gone
+  }
+};
+// Safety net: never hang longer than this, whatever happens
+const watchdog = setTimeout(() => {
+  console.error('Smoke test timed out.');
+  stopWrangler();
+  process.exit(1);
+}, 180_000);
 let log = '';
 wrangler.stdout.on('data', (d) => (log += d));
 wrangler.stderr.on('data', (d) => (log += d));
@@ -74,7 +92,8 @@ try {
 } catch (e) {
   fail(String(e));
 } finally {
-  wrangler.kill();
+  stopWrangler();
+  clearTimeout(watchdog);
 }
 
 if (failures.length) {
@@ -82,3 +101,4 @@ if (failures.length) {
   process.exit(1);
 }
 console.log('\nSmoke test passed.');
+process.exit(0);
