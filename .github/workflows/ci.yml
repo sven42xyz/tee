@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # Local-only tooling: no Cloudflare account or token is needed for any step below
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Type check (app and tests)
+        run: npm run check
+
+      - name: Unit and integration tests (Workers runtime)
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Smoke test against the build (pages, security headers, no inline code)
+        run: npm run smoke

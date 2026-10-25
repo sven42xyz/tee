@@ -8,10 +8,13 @@
     "build": "wrangler types && astro build",
     "preview": "npm run build && wrangler dev",
     "deploy": "npm run build && wrangler deploy",
-    "check": "wrangler types && astro check",
+    "check": "wrangler types && astro check && tsc --noEmit -p test/tsconfig.json",
     "cf-typegen": "wrangler types",
     "deploy:preview": "npm run build && wrangler preview",
-    "og": "sh og/render.sh"
+    "og": "sh og/render.sh",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.4",
@@ -20,8 +23,10 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@cloudflare/vitest-plugin": "^1.4.7",
     "@types/qrcode": "^1.5.6",
     "typescript": "^6.0.3",
+    "vitest": "^5.0.5",
     "wrangler": "^4.149.0"
   }
 }

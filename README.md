@@ -138,6 +138,8 @@ src/
 ├─ components/            SiteHeader, SiteFooter, Logo, LangSwitch, TransferScene (animation)
 ├─ layouts/               Base, LegalPage
 └─ styles/global.css      Color tokens, light/dark mode, base styles
+test/                     Vitest suites (Workers runtime) and test entrypoint
+scripts/smoke.mjs         Smoke test against the build
 og/                       Template and render script for the social preview images
 docs/abuse.md             Runbook for reports and illegal content
 ```
@@ -184,6 +186,18 @@ npm run og   # renders both languages with headless Chrome (macOS path, otherwis
 ```
 
 > **Tip:** to test the alarm locally, temporarily set `ROOM_TTL_MS` in `src/shared/limits.ts` to e.g. `5000`.
+
+## Tests
+
+```sh
+npm test           # Vitest inside the Workers runtime (Durable Objects, R2, rate limits, all local)
+npm run check      # type check app and tests
+npm run build && npm run smoke   # real build under wrangler dev: pages, security headers, no inline code
+```
+
+- `test/` covers encryption (incl. tampering), room codes, rooms and live sync, expiry, quotas, reports, signed moderation links and actions, and security headers. It uses `test/worker.ts`, which exports the same Durable Objects and API as `src/worker.ts` but skips the Astro page renderer.
+- `scripts/smoke.mjs` covers the pages, which only exist after `astro build`.
+- **CI** (`.github/workflows/ci.yml`) runs type check, tests, build and smoke test on every push to `main` and on pull requests. It needs no Cloudflare credentials and does not deploy.
 
 ## Deployment
 
