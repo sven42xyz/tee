@@ -49,6 +49,10 @@
   // Secret: `wrangler secret put TURNSTILE_SECRET_KEY`. Locally: .dev.vars (see .dev.vars.example)
   "vars": { "TURNSTILE_SITE_KEY": "0x4AAAAAAFTFRdi6GsGoj81e" },
 
+  // Secrets this Worker expects (values are set with `wrangler secret put`, never here).
+  // Declaring them makes `wrangler types` independent of a local .dev.vars, e.g. in CI.
+  "secrets": { "required": ["TURNSTILE_SECRET_KEY", "ADMIN_SECRET", "REPORT_TO"] },
+
   // Custom domain (the DNS record is created automatically on deploy)
   "routes": [{ "pattern": "tee.chapter42.de", "custom_domain": true }],
 
@@ -61,6 +65,7 @@
   // never mixes with production.
   "previews": {
     "vars": { "TURNSTILE_SITE_KEY": "0x4AAAAAAFTFRdi6GsGoj81e" },
+    "secrets": { "required": ["TURNSTILE_SECRET_KEY", "ADMIN_SECRET", "REPORT_TO"] },
     "durable_objects": {
       "bindings": [
         { "name": "ROOM", "class_name": "Room" },
